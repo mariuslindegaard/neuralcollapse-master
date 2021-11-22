@@ -1,3 +1,5 @@
-.DS_store
+.DS_Store
 __pycache__/
 *.pyc
+cifar10/
+cifar_regular*/
