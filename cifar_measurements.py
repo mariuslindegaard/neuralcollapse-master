@@ -63,7 +63,7 @@ class Measurements:
         # NC4
         self.NCC_mismatch = []
 
-def compute_metrics(measurements, model, criterion, dataloader, one_hot=False, use_cuda=True):
+def compute_metrics(measurements, model, criterion, dataloader, weight_decay, one_hot=False, use_cuda=True):
     model.eval()
 
     N             = [0 for _ in range(C)]
@@ -89,7 +89,8 @@ def compute_metrics(measurements, model, criterion, dataloader, one_hot=False, u
         criterion = criterion.cuda()
 
     for batch_idx, (inputs, labels) in enumerate(dataloader):
-        labels -= 1
+        # labels -= 1  # Remove since the results are already 0-indexed
+        # import pdb; pdb.set_trace()
         if one_hot:
             oh_labels = F.one_hot(labels, num_classes=C).float()
         if use_cuda:
@@ -118,7 +119,7 @@ def compute_metrics(measurements, model, criterion, dataloader, one_hot=False, u
     loss /= sum(N)
 
     for batch_idx, (inputs, labels) in enumerate(dataloader):
-        labels -=1
+        # labels -= 1  # Remove since the results are already 0-indexed
         if one_hot:
             oh_labels = F.one_hot(labels, num_classes=C).float()
         if use_cuda:
@@ -236,7 +237,7 @@ if __name__ == "__main__":
         model.load_state_dict(torch.load(os.path.join(save_dir,'%d.pt'%(e)), map_location=torch.device('cpu')))
 
         criterion = nn.MSELoss(reduction='sum') if args.criterion=='mse' else nn.CrossEntropyLoss(reduction='sum')
-        compute_metrics(measurements, model, criterion, dataloader, one_hot= args.criterion=='mse', use_cuda=True)
+        compute_metrics(measurements, model, criterion, dataloader, args.weight_decay, one_hot= args.criterion=='mse', use_cuda=True)
 
     with open(os.path.join(save_dir,'%s.pkl'%(args.criterion,)), 'wb') as f:
         pickle.dump(measurements,f)
