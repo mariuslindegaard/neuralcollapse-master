@@ -225,7 +225,7 @@ if __name__ == "__main__":
         epoch_list.extend(list(np.arange(epoch_list[-1],args.epochs,8))[1:])
         epoch_list.append(args.epochs)
 
-    save_dir = 'cifar_regular_expt_lr%.3f_wd%.4f'.format(args.learning_rate, args.weight_decay)
+    save_dir = 'cifar_regular_expt_lr%.3f_wd%.4f'%(args.learning_rate, args.weight_decay)
     if args.no_bias:
         save_dir += '_no_bias'
     if args.use_fc:
