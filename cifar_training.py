@@ -26,6 +26,7 @@ parser.add_argument('--init-scale', default=1.0, type=float, help='initializatio
 parser.add_argument('--epochs', default=350, type=int, help='total epochs (default: 350)')
 parser.add_argument('--lr-decay-steps', default=3, type=int, help='number of learning rate decay steps (default: 3)')
 parser.add_argument('--no-bias', action='store_true')
+parser.add_argument('--use-fc', action='store_true')
 
 # dataset parameters
 im_size             = 32
@@ -132,6 +133,8 @@ if __name__ == "__main__":
     save_dir = 'cifar_regular_expt_lr%.3f_wd%.4f'%(args.learning_rate, args.weight_decay)
     if args.no_bias:
         save_dir += '_no_bias'
+    if args.use_fc:
+        save_dir += '_2fc'
 
     save_dir = os.path.join(save_dir, 'mse' if args.criterion=='mse' else 'cross_entropy')
     if not os.path.exists(save_dir):

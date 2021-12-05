@@ -3,6 +3,62 @@ import torch.nn as nn
 
 from our_layers import *
 
+class NetSimpleConv2FC(nn.Module):
+    def __init__(self, input_channels, hidden_size, numClass, fcWidth=256,
+                 init_scale=1, init_type='const_norm', affine=True, has_nonlinear=1, has_bn=1, bias=True):
+        super(NetSimpleConv2FC, self).__init__()
+
+        self.hidden_size = hidden_size
+        featIn = input_channels
+        featOut = hidden_size
+        self.conv1_sub = SubBRC(featIn,featOut, kerSize=3, stride=2, padding=1, detached=False, has_nonlinear=0, has_bn=0, affine=affine, bias=bias)
+
+        featIn = featOut
+        featOut = featOut*2
+        self.conv2_sub = SubBRC(featIn,featOut, kerSize=3, stride=2, padding=1, detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
+
+        featIn = featOut
+        featOut = featOut*2
+        self.conv3_sub = SubBRC(featIn,featOut, kerSize=3, stride=2, padding=1, detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
+
+        featIn = featOut
+        featOut = featOut*2
+        self.conv4_sub = SubBRC(featIn,featOut, kerSize=3, stride=2, padding=1, detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
+
+        # FC-ish?
+        featIn = featOut
+        # featOut = numClass
+        featOut = fcWidth
+        self.conv5_sub = SubBRC(featIn,featOut, kerSize=4, stride=1, padding='valid', detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
+        # self.conv5_sub.conv.lastLayer = True
+
+        # FC layer
+        featIn = featOut
+        featOut = numClass
+        self.conv5_sub = SubBRC(featIn,featOut, kerSize=1, stride=1, padding='valid', detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
+        self.conv5_sub.conv.lastLayer = True
+
+        #featIn = featOut; featOut = numClass
+        #self.fc1 = nn.Linear(featIn , featOut)
+        self.numClass = numClass
+        self.nnsoftmax_layer = nn.Softmax(1) # 2nd dim
+
+        init_convnet(self,init_scale,init_type, bn_affine=affine)
+
+    def forward(self, x, detached=None, detach_last=None):
+        if detach_last is None:
+            detach_last = detached
+
+        x = self.conv1_sub(x)
+        x = self.conv2_sub(x)
+        x = self.conv3_sub(x)
+        x = self.conv4_sub(x)
+        x = self.conv5_sub(x)
+        x = x.squeeze(3).squeeze(2)
+        self.final_out = x  # save the output for computing the loss
+
+        return x
+
 class NetSimpleConv(nn.Module):
     def __init__(self, input_channels, hidden_size, numClass, init_scale=1, init_type='const_norm', affine=True, has_nonlinear=1, has_bn=1, bias=True):
         super(NetSimpleConv, self).__init__()
@@ -38,21 +94,16 @@ class NetSimpleConv(nn.Module):
         init_convnet(self,init_scale,init_type, bn_affine=affine)
 
     def forward(self, x, detached=None, detach_last=None):
-        if  detach_last is None:
+        if detach_last is None:
             detach_last = detached
 
         # import pdb; pdb.set_trace()
 
         x = self.conv1_sub(x)
-
-        x =  self.conv2_sub(x)
-
+        x = self.conv2_sub(x)
         x = self.conv3_sub(x)
-
         x = self.conv4_sub(x)
-
         x = self.conv5_sub(x)
-        #import pdb; pdb.set_trace()
         x = x.squeeze(3).squeeze(2)
         self.final_out = x # save the output for computing the loss
 
@@ -90,31 +141,24 @@ class NetSimpleConv4(nn.Module):
         init_convnet(self,init_scale,init_type, bn_affine=False)
 
     def forward(self, x, detached=None, detach_last=None):
-        if  detach_last is None:
+        if detach_last is None:
             detach_last = detached
 
-        # import pdb; pdb.set_trace()
-
         x = self.conv1_sub(x)
-
-        x =  self.conv2_sub(x)
-
+        x = self.conv2_sub(x)
         x = self.conv3_sub(x)
-
         x = self.conv5_sub(x)
-        #import pdb; pdb.set_trace()
         x = x.squeeze(3).squeeze(2)
-        self.final_out = x # save the output for computing the loss
 
+        self.final_out = x # save the output for computing the loss
         return x
 
 
 def init_convnet(model,init_scale,init_type='const_norm',bn_affine=True,bnpost=''):
+    """Initialize weights of model"""
 
     init_0_scale, init_1_scale =  parse_init_scale(init_scale)
-
     print('init_0_scale:' + str(init_0_scale))
-
     print('init_1_scale:' + str(init_1_scale))
 
     for m in model.modules():
@@ -157,6 +201,7 @@ def init_convnet(model,init_scale,init_type='const_norm',bn_affine=True,bnpost='
 
 
         elif isinstance(m, nn.Linear):
+            print("INIT_LINEAR_REACHED" + "::"*20)
 
             if hasattr( m,'lastLayer') and m.lastLayer:
                 init_scale__ = init_1_scale

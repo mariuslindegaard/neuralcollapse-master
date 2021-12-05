@@ -45,9 +45,9 @@ epoch_list          = [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
 
 class Measurements:
   def __init__(self):
-    self.accuracy     = []
-    self.loss         = []
-    self.reg_loss     = []
+    self.accuracy     = []  # Classification accuracy
+    self.loss         = []  # Model loss (unregularized)
+    self.reg_loss     = []  # Loss (with regularization loss)
 
     # NC1
     self.Sw_invSb     = []

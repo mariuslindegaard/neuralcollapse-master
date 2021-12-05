@@ -26,7 +26,7 @@ class SubBRC(nn.Module):
             self.bn = nn.BatchNorm2d(featIn, affine=affine)
         self.conv = nn.Conv2d(featIn, featOut, kerSize, stride=stride, padding=padding, bias=bias)
         self.detached = detached
-        self.has_bn =  has_bn
+        self.has_bn = has_bn
         self.has_nonlinear = has_nonlinear
         self.backhook_conv = BackhookPreConv()
         self.backhook_relu = BackhookPreReLU()
