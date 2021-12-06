@@ -14,8 +14,12 @@ from our_models import NetSimpleConv, NetSimpleConv4
 from tqdm import tqdm
 
 import os
+import shutil
+import warnings
 
 parser = argparse.ArgumentParser(description='Simple ConvNet training on MNIST to achieve neural collapse')
+parser.add_argument('-cfg', '--config', default='config/default.yaml', type=str,
+                    help='Config file path. YAML-format expected, see "./config/default.yaml" for format.')
 parser.add_argument('-cr', '--criterion', default='mse', type=str, help='loss function used, cross entropy vs MSE (default)')
 parser.add_argument('-b', '--batch-size', default=128, type=int, help='mini-batch size (default: 128)')
 parser.add_argument('-lr', '--learning-rate', default=0.067, type=float, help='initial learning rate (default: 0.1)')
@@ -28,22 +32,21 @@ parser.add_argument('--lr-decay-steps', default=3, type=int, help='number of lea
 parser.add_argument('--no-bias', action='store_true')
 parser.add_argument('--use-fc', action='store_true')
 
-# dataset parameters
-im_size             = 32
-C                   = 10
-input_ch            = 3
+# # dataset parameters
+# im_size             = 32
+# C                   = 10
+# input_ch            = 3
+#
+#
+# # analysis parameters
+# epoch_list          = [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
+#                        12,  13,  14,  16,  17,  19,  20,  22,  24,  27,   29,
+#                        32,  35,  38,  42,  45,  50,  54,  59,  65,  71,   77,
+#                        85,  92,  101, 110, 121, 132, 144, 158, 172, 188,  206,
+#                        225, 245, 268, 293, 320, 350, 400, 450, 500, 550, 600,
+#                        650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100]
 
-
-# analysis parameters
-epoch_list          = [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
-                       12,  13,  14,  16,  17,  19,  20,  22,  24,  27,   29,
-                       32,  35,  38,  42,  45,  50,  54,  59,  65,  71,   77,
-                       85,  92,  101, 110, 121, 132, 144, 158, 172, 188,  206,
-                       225, 245, 268, 293, 320, 350, 400, 450, 500, 550, 600,
-                       650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100]
-
-def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_list, save_dir, one_hot=False, use_cuda=False):
-
+def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_list, save_dir, config_params, one_hot=False, use_cuda=False):
     use_cuda = use_cuda and torch.cuda.is_available()
 
     if use_cuda:
@@ -62,7 +65,7 @@ def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_lis
             #     continue
 
             if one_hot:
-                labels = F.one_hot(labels, num_classes=C).float()
+                labels = F.one_hot(labels, num_classes=config_params['Data']['classes']).float()  # TODO(marius): Move into data-loader
             if use_cuda:
                 inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
             optimizer.zero_grad()
@@ -106,15 +109,30 @@ def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_lis
     ebar.close()
 
 if __name__ == "__main__":
+    import yaml
 
-    global args
     args = parser.parse_args()
 
+    # Parse config file from args
+    with open(args.config, "r") as config_file:
+        config_params = yaml.safe_load(config_file)
+    model_cfg     = config_params['Model']  # noqa:E221
+    data_cfg      = config_params['Data']  # noqa:E221
+    optimizer_cfg = config_params['Optimizer']  # noqa:E221
+    logging_cfg   = config_params['Logging']  # noqa:E221
+
+    save_dir = logging_cfg['save-dir']
+    shutil.copy(args.config, os.path.join(save_dir, "config.yaml"), follow_symlinks=True)
+    save_dir_data = os.path.join(save_dir, 'data')
+    if not os.path.exists(save_dir_data):
+        os.makedirs(save_dir_data)
+
+    # TODO(marius): Make dataset loader file
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                      std=[x/255.0 for x in [63.0, 62.1, 66.7]])
     tx = transforms.Compose([transforms.ToTensor(), normalize])
     data = datasets.CIFAR10(root='cifar10', train=True, transform=tx, download=True)
-    trainloader = DataLoader(data, batch_size=args.batch_size)
+    trainloader = DataLoader(data, batch_size=data_cfg['batch-size'])
 
     # binary_classes = [1,2]
     # idxs = [i for i in range(len(data)) if data.targets[i] in binary_classes]
@@ -125,37 +143,27 @@ if __name__ == "__main__":
     # first_layer_ch = model.features[0].weight.shape[0]
     # model.features[0] = nn.Conv2d(input_ch, first_layer_ch, 3, 1, 1)
 
-    if args.epochs > epoch_list[-1]:
-        epoch_list.extend(list(np.arange(epoch_list[-1],args.epochs,8))[1:])
-        epoch_list.append(args.epochs)
+    if optimizer_cfg['epochs'] > logging_cfg['epoch-list'][-1]:
+        warnings.warn(f"Last logging epoch is {logging_cfg['epoch-list'][-1]} but the model "
+                      f"will train for {optimizer_cfg['epochs']} epochs.")
+        # logging_cfg['epoch-list'].extend(list(np.arange(logging_cfg['epoch-list'][-1],optimizer_cfg['epochs'],8))[1:])
+        # logging_cfg['epoch-list'].append(optimizer_cfg['epochs'])
 
-    model = NetSimpleConv(input_ch, 32, C, init_scale=args.init_scale, bias= not args.no_bias)  # TODO(marius): Change model
+    model = NetSimpleConv(data_cfg['input-ch'], data_cfg['im-size'], data_cfg['classes'],
+                          init_scale=model_cfg['init-scale'], bias = not model_cfg['no-bias'])  # TODO(marius): Change model
 
-    save_dir = 'cifar_regular_expt_lr%.3f_wd%.4f'%(args.learning_rate, args.weight_decay)
-    if args.no_bias:
-        save_dir += '_no_bias'
-    if args.use_fc:
-        save_dir += '_2fc'
 
-    save_dir = os.path.join(save_dir, 'mse' if args.criterion=='mse' else 'cross_entropy')
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+    criterion = nn.MSELoss() if optimizer_cfg['criterion'] == 'mse' else nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(),
+                          lr=optimizer_cfg['lr'],
+                          momentum=optimizer_cfg['momentum'],
+                          weight_decay=optimizer_cfg['weight-decay'])
 
-    criterion = nn.MSELoss() if args.criterion=='mse' else nn.CrossEntropyLoss()
-    if args.weight_decay>0:
-        optimizer = optim.SGD(model.parameters(),
-                              lr=args.learning_rate,
-                              momentum=args.momentum,
-                              weight_decay=args.weight_decay)
-    else:
-        optimizer = optim.SGD(model.parameters(),
-                              lr=args.learning_rate,
-                              momentum=args.momentum)
-
-    epochs_lr_decay = [i*args.epochs//args.lr_decay_steps for i in range(1,args.lr_decay_steps)]
+    epochs_lr_decay = [i*optimizer_cfg['epochs']//optimizer_cfg['lr-decay-steps'] for i in range(1, optimizer_cfg['lr-decay-steps'])]
 
     lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
                                                   milestones=epochs_lr_decay,
-                                                  gamma=args.learning_rate_decay)
+                                                  gamma=optimizer_cfg['lr-decay'])
 
-    train(model, criterion, optimizer, lr_scheduler, trainloader, args.epochs, epoch_list, save_dir, one_hot=args.criterion=='mse', use_cuda=True)
+    train(model, criterion, optimizer, lr_scheduler, trainloader, optimizer_cfg['epochs'], logging_cfg['epoch-list'],
+          save_dir_data, config_params, one_hot=optimizer_cfg['criterion'] == 'mse', use_cuda=True)

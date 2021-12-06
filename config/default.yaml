@@ -3,26 +3,27 @@
 Model:
   model-name: NetSimpleConv  # Name of model in "our_models"
   no-bias: false             # model param
+  init-scale: 1.0        # Initialization scale for network weights
 
 Data:
   getter: get_cifar  # Which dataset-getter to use  # TODO(marius): Create dataset-getters and let them return params
   im-size: 32  # Image size (n times n)
-  input_ch: 3  # Image input channels
+  input-ch: 3  # Image input channels
   classes: 10  # Classes of data
+  batch-size: 128        # Mini-batch size
 
 Optimizer:
   criterion: mse         # Loss type. "mse" for MSE, otherwise cross-entropy
-  weight-decay: 5e-4     # Weight decay
-  batch-size: 128        # Mini-batch size
+  weight-decay: 5.e-4    # Weight decay
   epochs: 350            # Epochs to train for
   lr: 0.067              # Optimizer learning rate
   lr-decay: 0.1          # Learning rate decay
   lr-decay-steps: 3      # Number of learning rate decay steps
   momentum: 0.9          # Optimizer momentum
-  init-scale: 1.0        # Initialization scale for network weights
 
 Logging:
   # When to store weights and calculate measurements
+  save-dir: runs/default
   epoch-list: [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
                12,  13,  14,  16,  17,  19,  20,  22,  24,  27,   29,
                32,  35,  38,  42,  45,  50,  54,  59,  65,  71,   77,
