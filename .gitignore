@@ -2,6 +2,7 @@
 .DS_Store
 cifar10/
 cifar_regular*/
+_tmp_*
 
 
 ## Default ignores
