@@ -32,7 +32,6 @@ parser.add_argument('--lr-decay-steps', default=3, type=int, help='number of lea
 parser.add_argument('--no-bias', action='store_true')
 parser.add_argument('--use-fc', action='store_true')
 
-<<<<<<< HEAD
 # # dataset parameters
 # im_size             = 32
 # C                   = 10
