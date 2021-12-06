@@ -82,8 +82,8 @@ def compute_metrics(measurements, model, criterion, dataloader, weight_decay, on
     def feature_hook(self, input, output):
         features.value = input[0].clone()
 
-    model.conv5_sub.conv.register_forward_hook(feature_hook)
-    classifier = model.conv5_sub.conv
+    model.conv6_sub.conv.register_forward_hook(feature_hook)  # TODO(mariu): Update both of these to reflect a layer choice, not just "conv6" or "conv5"
+    classifier = model.conv6_sub.conv
 
     use_cuda = use_cuda and torch.cuda.is_available()
     if use_cuda:
