@@ -29,14 +29,14 @@ class NetSimpleConv2FC(nn.Module):
         featIn = featOut
         # featOut = numClass
         featOut = fcWidth
-        self.conv5_sub = SubBRC(featIn,featOut, kerSize=4, stride=1, padding='valid', detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
+        self.conv5_sub = SubBRC(featIn,featOut, kerSize=2, stride=1, padding='valid', detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
         # self.conv5_sub.conv.lastLayer = True
 
         # FC layer
         featIn = featOut
         featOut = numClass
-        self.conv5_sub = SubBRC(featIn,featOut, kerSize=1, stride=1, padding='valid', detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
-        self.conv5_sub.conv.lastLayer = True
+        self.conv6_sub = SubBRC(featIn,featOut, kerSize=1, stride=1, padding='valid', detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
+        self.conv6_sub.conv.lastLayer = True
 
         #featIn = featOut; featOut = numClass
         #self.fc1 = nn.Linear(featIn , featOut)
@@ -54,6 +54,7 @@ class NetSimpleConv2FC(nn.Module):
         x = self.conv3_sub(x)
         x = self.conv4_sub(x)
         x = self.conv5_sub(x)
+        x = self.conv6_sub(x)
         x = x.squeeze(3).squeeze(2)
         self.final_out = x  # save the output for computing the loss
 
