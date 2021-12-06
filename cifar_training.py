@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from torchvision import models, datasets, transforms
 from torch.utils.data import DataLoader, Subset
 
-from our_models import NetSimpleConv, NetSimpleConv4
+from our_models import NetSimpleConv, NetSimpleConv4, NetSimpleConv2FC
 
 from tqdm import tqdm
 
@@ -40,7 +40,7 @@ epoch_list          = [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
                        32,  35,  38,  42,  45,  50,  54,  59,  65,  71,   77,
                        85,  92,  101, 110, 121, 132, 144, 158, 172, 188,  206,
                        225, 245, 268, 293, 320, 350, 400, 450, 500, 550, 600,
-                       650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100]
+                       650, 700, 750, 800, 850, 900, 950, 1000]
 
 def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_list, save_dir, one_hot=False, use_cuda=False):
 
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         epoch_list.extend(list(np.arange(epoch_list[-1],args.epochs,8))[1:])
         epoch_list.append(args.epochs)
 
-    model = NetSimpleConv(input_ch, 32, C, init_scale=args.init_scale, bias= not args.no_bias)
+    model = NetSimpleConv2FC(input_ch, 32, C, init_scale=args.init_scale, bias= not args.no_bias)
 
     save_dir = 'cifar_regular_expt_lr%.3f_wd%.4f'%(args.learning_rate, args.weight_decay)
     if args.no_bias:

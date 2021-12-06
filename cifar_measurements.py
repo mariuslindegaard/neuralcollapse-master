@@ -10,7 +10,7 @@ from torch.autograd import Variable
 from torchvision import models, datasets, transforms
 from torch.utils.data import DataLoader, Subset
 
-from our_models import NetSimpleConv,NetSimpleConv4
+from our_models import NetSimpleConv,NetSimpleConv4, NetSimpleConv2FC
 
 import matplotlib.pyplot as plt
 import pickle
@@ -42,7 +42,7 @@ epoch_list          = [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
                        32,  35,  38,  42,  45,  50,  54,  59,  65,  71,   77,
                        85,  92,  101, 110, 121, 132, 144, 158, 172, 188,  206,
                        225, 245, 268, 293, 320, 350, 400, 450, 500, 550, 600,
-                       650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100]
+                       650, 700, 750, 800, 850, 900, 950, 1000]
 
 class Measurements:
     def __init__(self):
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     measurements = Measurements()
     for e in epoch_list:
         print('Loading %s : %d.pt'%(save_dir,e))
-        model = NetSimpleConv(input_ch, 32, C, init_scale=0.01, bias= not args.no_bias)
+        model = NetSimpleConv2FC(input_ch, 32, C, init_scale=0.01, bias= not args.no_bias)
         model.load_state_dict(torch.load(os.path.join(save_dir,'%d.pt'%(e)), map_location=torch.device('cpu')))
 
         criterion = nn.MSELoss(reduction='sum') if args.criterion=='mse' else nn.CrossEntropyLoss(reduction='sum')
