@@ -10,7 +10,7 @@ from torch.autograd import Variable
 from torchvision import models, datasets, transforms
 from torch.utils.data import DataLoader, Subset
 
-from our_models import NetSimpleConv,NetSimpleConv4
+from our_models import NetSimpleConv,NetSimpleConv4, NetSimpleConv2FC
 
 import matplotlib.pyplot as plt
 import pickle
@@ -43,7 +43,7 @@ epoch_list          = [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
                        32,  35,  38,  42,  45,  50,  54,  59,  65,  71,   77,
                        85,  92,  101, 110, 121, 132, 144, 158, 172, 188,  206,
                        225, 245, 268, 293, 320, 350, 400, 450, 500, 550, 600,
-                       650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100]
+                       650, 700, 750, 800, 850, 900, 950, 1000]
 
 attrs = ['accuracy', 'loss', 'reg_loss', 'Sw_invSb', 'norm_M_CoV', 'norm_W_CoV', 'cos_M', 'cos_W',
          'W_M_dist', 'NCC_mismatch']
@@ -233,8 +233,8 @@ def compute_metrics(measurements, model, criterion, dataloader, weight_decay, on
     def feature_hook(self, input, output):
         features.value = input[0].clone()
 
-    model.conv5_sub.conv.register_forward_hook(feature_hook)
-    classifier = model.conv5_sub.conv
+    model.conv6_sub.conv.register_forward_hook(feature_hook)  # TODO(mariu): Update both of these to reflect a layer choice, not just "conv6" or "conv5"
+    classifier = model.conv6_sub.conv
 
     use_cuda = use_cuda and torch.cuda.is_available()
     if use_cuda:
@@ -388,7 +388,7 @@ if __name__ == "__main__":
     measurements = Measurements()
     for e in epoch_list:  # TODO(marius): Make stop at epochs, not go through the whole list. Or rather: Do all files in the directory
         print('Loading %s : %d.pt'%(save_dir,e))
-        model = NetSimpleConv(input_ch, 32, C, init_scale=0.01, bias=not args.no_bias)  # TODO(marius): Change model
+        model = NetSimpleConv2FC(input_ch, 32, C, init_scale=0.01, bias= not args.no_bias)  # TODO(marius): Make model dynamic from config
         model.load_state_dict(torch.load(os.path.join(save_dir,'%d.pt'%(e)), map_location=torch.device('cpu')))
 
         criterion = nn.MSELoss(reduction='sum') if args.criterion=='mse' else nn.CrossEntropyLoss(reduction='sum')

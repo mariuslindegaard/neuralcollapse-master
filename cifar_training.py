@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from torchvision import models, datasets, transforms
 from torch.utils.data import DataLoader, Subset
 
-from our_models import NetSimpleConv, NetSimpleConv4
+from our_models import NetSimpleConv, NetSimpleConv4, NetSimpleConv2FC
 
 from tqdm import tqdm
 
@@ -32,6 +32,7 @@ parser.add_argument('--lr-decay-steps', default=3, type=int, help='number of lea
 parser.add_argument('--no-bias', action='store_true')
 parser.add_argument('--use-fc', action='store_true')
 
+<<<<<<< HEAD
 # # dataset parameters
 # im_size             = 32
 # C                   = 10
@@ -149,7 +150,7 @@ if __name__ == "__main__":
         # logging_cfg['epoch-list'].extend(list(np.arange(logging_cfg['epoch-list'][-1],optimizer_cfg['epochs'],8))[1:])
         # logging_cfg['epoch-list'].append(optimizer_cfg['epochs'])
 
-    model = NetSimpleConv(data_cfg['input-ch'], data_cfg['im-size'], data_cfg['classes'],
+    model = NetSimpleConv2FC(data_cfg['input-ch'], data_cfg['im-size'], data_cfg['classes'],
                           init_scale=model_cfg['init-scale'], bias = not model_cfg['no-bias'])  # TODO(marius): Change model
 
 
