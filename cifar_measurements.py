@@ -109,7 +109,9 @@ class Measurements(collections.UserDict):
             h = features.value.data.view(inputs.shape[0], -1)  # B CHW
 
             for c in range(num_classes):
-                idxs = (labels == c).nonzero(as_tuple=True)[0]
+                idxs = (torch.argmax(labels, dim=1) == c).nonzero(as_tuple=True)[0]
+                if not len(idxs):  # Continue if no images classified to 'c'
+                    continue
                 h_c = h[idxs, :]  # B CHW
 
                 # update class means
@@ -131,7 +133,7 @@ class Measurements(collections.UserDict):
             h = features.value.data.view(inputs.shape[0], -1)  # B CHW
             for c in range(num_classes):
                 # features belonging to class c
-                idxs = (labels == c).nonzero(as_tuple=True)[0]
+                idxs = (torch.argmax(labels, dim=1) == c).nonzero(as_tuple=True)[0]
                 if not len(idxs):  # Continue if no images classified to 'c'
                     continue
                 h_c = h[idxs, :]  # B CHW
@@ -176,20 +178,20 @@ class Measurements(collections.UserDict):
         Sb = Sb.cpu().numpy()
         eigvec, eigval, _ = svds(Sb, k=num_classes - 1)
         inv_Sb = eigvec @ np.diag(eigval ** (-1)) @ eigvec.T
-        self['Sw_invSb'].append(np.trace(Sw @ inv_Sb))
+        self['Sw_invSb'].append(np.trace(Sw @ inv_Sb))  # TODO: Fault
 
         # avg norm
         W = classifier.weight.view(num_classes, -1)
         M_norms = torch.norm(M_, dim=0)
         W_norms = torch.norm(W.T, dim=0)
 
-        self['norm_M_CoV'].append((torch.std(M_norms) / torch.mean(M_norms)).item())
+        self['norm_M_CoV'].append((torch.std(M_norms) / torch.mean(M_norms)).item())  # TODO: Fault
         self['norm_W_CoV'].append((torch.std(W_norms) / torch.mean(W_norms)).item())
 
         # ||W^T - M_||
         normalized_M = M_ / torch.norm(M_, 'fro')
         normalized_W = W.T / torch.norm(W.T, 'fro')
-        self['W_M_dist'].append((torch.norm(normalized_W - normalized_M) ** 2).item())
+        self['W_M_dist'].append((torch.norm(normalized_W - normalized_M) ** 2).item())  # TODO: Fault
 
         # mutual coherence
         def coherence(V, C):
@@ -201,7 +203,7 @@ class Measurements(collections.UserDict):
             G -= torch.diag(torch.diag(G))
             return torch.norm(G, 1).item() / (C * (C - 1))
 
-        self['cos_M'].append(coherence(M_ / M_norms, num_classes))
+        self['cos_M'].append(coherence(M_ / M_norms, num_classes))  # TODO: Fault
         self['cos_W'].append(coherence(W.T / W_norms, num_classes))
 
 def main(args):
@@ -252,7 +254,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-
     args = parser.parse_args()
+    args.config = "config/1fc.yaml"
     main(args)
 
