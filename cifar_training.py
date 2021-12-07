@@ -14,8 +14,8 @@ import data_loader
 
 from tqdm import tqdm
 
+import utils
 import os
-import shutil
 import warnings
 
 parser = argparse.ArgumentParser(description='Simple ConvNet training on MNIST to achieve neural collapse')
@@ -93,31 +93,13 @@ def get_optimizer(model, optimizer_cfg):
 
     return criterion, optimizer, lr_scheduler
 
-def init_config(config_path):
-    """Return parsed config and create relevant directories"""
-    with open(config_path, "r") as config_file:
-        config_params = yaml.safe_load(config_file)
-    model_cfg     = config_params['Model']  # noqa:E221
-    data_cfg      = config_params['Data']  # noqa:E221
-    optimizer_cfg = config_params['Optimizer']  # noqa:E221
-    logging_cfg   = config_params['Logging']  # noqa:E221
-
-    save_dir = logging_cfg['save-dir']
-    save_dir_data = os.path.join(save_dir, 'data')
-    if not os.path.exists(save_dir_data):
-        os.makedirs(save_dir_data)
-
-    shutil.copy(config_path, os.path.join(save_dir, "config.yaml"), follow_symlinks=True)
-
-    return config_params, (model_cfg, data_cfg, optimizer_cfg, logging_cfg), (save_dir, save_dir_data)
-
 
 def main():
 
     # Parse config file
     config_params,\
-        (model_cfg, data_cfg, optimizer_cfg, logging_cfg),\
-        (save_dir, save_dir_data) = init_config(args.config)
+        (model_cfg, data_cfg, optimizer_cfg, logging_cfg, measurements_cfg),\
+        (save_dir, save_dir_data, save_dir_measurements) = utils.init_config(args.config)
 
     # Get dataset from config
     trainloader, image_ch, image_size, num_classes = data_loader.load_dataset(data_cfg)
@@ -141,6 +123,5 @@ def main():
 
 
 if __name__ == "__main__":
-    import yaml
     args = parser.parse_args()
     main()
