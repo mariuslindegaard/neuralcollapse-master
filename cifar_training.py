@@ -103,10 +103,11 @@ def init_config(config_path):
     logging_cfg   = config_params['Logging']  # noqa:E221
 
     save_dir = logging_cfg['save-dir']
-    shutil.copy(config_path, os.path.join(save_dir, "config.yaml"), follow_symlinks=True)
     save_dir_data = os.path.join(save_dir, 'data')
     if not os.path.exists(save_dir_data):
         os.makedirs(save_dir_data)
+
+    shutil.copy(config_path, os.path.join(save_dir, "config.yaml"), follow_symlinks=True)
 
     return config_params, (model_cfg, data_cfg, optimizer_cfg, logging_cfg), (save_dir, save_dir_data)
 
