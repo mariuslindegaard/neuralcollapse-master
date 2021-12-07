@@ -6,10 +6,7 @@ Model:
   init-scale: 1.0            # Initialization scale for network weights
 
 Data:
-  dataset-id: cifar10    # Which dataset-getter to use  # TODO(marius): Create dataset-getters and let them return params
-  im-size: 32            # Image size (n times n)
-  input-ch: 3            # Image input channels
-  classes: 10            # Classes of data
+  dataset-id: cifar10    # Which dataset-getter to use. Note that shapes are provided by the dataset
   batch-size: 128        # Mini-batch size
 
 Optimizer:
