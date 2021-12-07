@@ -20,7 +20,7 @@ Optimizer:
 
 Logging:
   # When to store weights and calculate measurements
-  save-dir: runs/default
+  save-dir: runs/short_test
   epoch-list: [1,   2]
 
 Measurements:
