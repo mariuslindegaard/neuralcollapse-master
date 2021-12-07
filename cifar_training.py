@@ -19,7 +19,7 @@ import shutil
 import warnings
 
 parser = argparse.ArgumentParser(description='Simple ConvNet training on MNIST to achieve neural collapse')
-parser.add_argument('-cfg', '--config', default='config/default.yaml', type=str,
+parser.add_argument('-cfg', '--config', type=str,
                     help='Config file path. YAML-format expected, see "./config/default.yaml" for format.')
 
 def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_list, save_dir, config_params, one_hot=False, use_cuda=False):
