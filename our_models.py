@@ -159,8 +159,8 @@ def init_convnet(model,init_scale,init_type='const_norm',bn_affine=True,bnpost='
     """Initialize weights of model"""
 
     init_0_scale, init_1_scale =  parse_init_scale(init_scale)
-    print('init_0_scale:' + str(init_0_scale))
-    print('init_1_scale:' + str(init_1_scale))
+    # print('init_0_scale:' + str(init_0_scale))
+    # print('init_1_scale:' + str(init_1_scale))
 
     for m in model.modules():
         if isinstance(m, nn.Conv2d):
