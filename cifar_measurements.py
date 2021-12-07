@@ -123,8 +123,6 @@ class Measurements(collections.UserDict):
 
         print("Second loop:")
         for batch_idx, (inputs, labels) in tqdm(enumerate(dataloader), total=len(dataloader)):
-            if batch_idx > 400: import pdb; pdb.set_trace()
-            # labels -= 1  # Remove since the results are already 0-indexed
             if use_cuda:
                 inputs = Variable(inputs.cuda())
                 labels = Variable(labels.cuda())
