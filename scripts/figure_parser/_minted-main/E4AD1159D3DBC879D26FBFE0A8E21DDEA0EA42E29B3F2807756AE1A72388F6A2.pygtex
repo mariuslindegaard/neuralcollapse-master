@@ -1,0 +1,34 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nn}{\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{c+c1}{\PYGZsh{} Neural collapse config file. All must be specified}
+\PYG{n+nt}{Model}\PYG{p}{:}
+  \PYG{n+nt}{model\PYGZhy{}name}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{NetSimpleConv}  \PYG{c+c1}{\PYGZsh{} Name of model in \PYGZdq{}our\PYGZus{}models\PYGZdq{}}
+  \PYG{n+nt}{no\PYGZhy{}bias}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{false}             \PYG{c+c1}{\PYGZsh{} model param}
+  \PYG{n+nt}{init\PYGZhy{}scale}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{1.0}            \PYG{c+c1}{\PYGZsh{} Initialization scale for network weights}
+
+\PYG{n+nt}{Data}\PYG{p}{:}
+  \PYG{n+nt}{dataset\PYGZhy{}id}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{cifar10}    \PYG{c+c1}{\PYGZsh{} Which dataset\PYGZhy{}getter to use. Note that shapes are provided by the dataset}
+  \PYG{n+nt}{batch\PYGZhy{}size}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{128}        \PYG{c+c1}{\PYGZsh{} Mini\PYGZhy{}batch size}
+
+\PYG{n+nt}{Optimizer}\PYG{p}{:}
+  \PYG{n+nt}{criterion}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{mse}         \PYG{c+c1}{\PYGZsh{} Loss type. \PYGZdq{}mse\PYGZdq{} for MSE, otherwise cross\PYGZhy{}entropy}
+  \PYG{n+nt}{weight\PYGZhy{}decay}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{5.e\PYGZhy{}4}    \PYG{c+c1}{\PYGZsh{} Weight decay}
+  \PYG{n+nt}{epochs}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{1100}           \PYG{c+c1}{\PYGZsh{} Epochs to train for}
+  \PYG{n+nt}{lr}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{0.067}              \PYG{c+c1}{\PYGZsh{} Optimizer learning rate}
+  \PYG{n+nt}{lr\PYGZhy{}decay}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{0.1}          \PYG{c+c1}{\PYGZsh{} Learning rate decay}
+  \PYG{n+nt}{lr\PYGZhy{}decay\PYGZhy{}steps}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{3}      \PYG{c+c1}{\PYGZsh{} Number of learning rate decay steps}
+  \PYG{n+nt}{momentum}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{0.9}          \PYG{c+c1}{\PYGZsh{} Optimizer momentum}
+
+\PYG{n+nt}{Logging}\PYG{p}{:}
+  \PYG{c+c1}{\PYGZsh{} When to store weights and calculate measurements}
+  \PYG{n+nt}{save\PYGZhy{}dir}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{runs/2fc}
+  \PYG{n+nt}{epoch\PYGZhy{}list}\PYG{p}{:} \PYG{p+pIndicator}{[}\PYG{n+nv}{1}\PYG{p+pIndicator}{,}   \PYG{n+nv}{2}\PYG{p+pIndicator}{,}   \PYG{n+nv}{3}\PYG{p+pIndicator}{,}   \PYG{n+nv}{4}\PYG{p+pIndicator}{,}   \PYG{n+nv}{5}\PYG{p+pIndicator}{,}   \PYG{n+nv}{6}\PYG{p+pIndicator}{,}   \PYG{n+nv}{7}\PYG{p+pIndicator}{,}   \PYG{n+nv}{8}\PYG{p+pIndicator}{,}   \PYG{n+nv}{9}\PYG{p+pIndicator}{,}   \PYG{n+nv}{10}\PYG{p+pIndicator}{,}   \PYG{n+nv}{11}\PYG{p+pIndicator}{,}
+               \PYG{n+nv}{12}\PYG{p+pIndicator}{,}  \PYG{n+nv}{13}\PYG{p+pIndicator}{,}  \PYG{n+nv}{14}\PYG{p+pIndicator}{,}  \PYG{n+nv}{16}\PYG{p+pIndicator}{,}  \PYG{n+nv}{17}\PYG{p+pIndicator}{,}  \PYG{n+nv}{19}\PYG{p+pIndicator}{,}  \PYG{n+nv}{20}\PYG{p+pIndicator}{,}  \PYG{n+nv}{22}\PYG{p+pIndicator}{,}  \PYG{n+nv}{24}\PYG{p+pIndicator}{,}  \PYG{n+nv}{27}\PYG{p+pIndicator}{,}   \PYG{n+nv}{29}\PYG{p+pIndicator}{,}
+               \PYG{n+nv}{32}\PYG{p+pIndicator}{,}  \PYG{n+nv}{35}\PYG{p+pIndicator}{,}  \PYG{n+nv}{38}\PYG{p+pIndicator}{,}  \PYG{n+nv}{42}\PYG{p+pIndicator}{,}  \PYG{n+nv}{45}\PYG{p+pIndicator}{,}  \PYG{n+nv}{50}\PYG{p+pIndicator}{,}  \PYG{n+nv}{54}\PYG{p+pIndicator}{,}  \PYG{n+nv}{59}\PYG{p+pIndicator}{,}  \PYG{n+nv}{65}\PYG{p+pIndicator}{,}  \PYG{n+nv}{71}\PYG{p+pIndicator}{,}   \PYG{n+nv}{77}\PYG{p+pIndicator}{,}
+               \PYG{n+nv}{85}\PYG{p+pIndicator}{,}  \PYG{n+nv}{92}\PYG{p+pIndicator}{,}  \PYG{n+nv}{101}\PYG{p+pIndicator}{,} \PYG{n+nv}{110}\PYG{p+pIndicator}{,} \PYG{n+nv}{121}\PYG{p+pIndicator}{,} \PYG{n+nv}{132}\PYG{p+pIndicator}{,} \PYG{n+nv}{144}\PYG{p+pIndicator}{,} \PYG{n+nv}{158}\PYG{p+pIndicator}{,} \PYG{n+nv}{172}\PYG{p+pIndicator}{,} \PYG{n+nv}{188}\PYG{p+pIndicator}{,}  \PYG{n+nv}{206}\PYG{p+pIndicator}{,}
+               \PYG{n+nv}{225}\PYG{p+pIndicator}{,} \PYG{n+nv}{245}\PYG{p+pIndicator}{,} \PYG{n+nv}{268}\PYG{p+pIndicator}{,} \PYG{n+nv}{293}\PYG{p+pIndicator}{,} \PYG{n+nv}{320}\PYG{p+pIndicator}{,} \PYG{n+nv}{350}\PYG{p+pIndicator}{,} \PYG{n+nv}{400}\PYG{p+pIndicator}{,} \PYG{n+nv}{450}\PYG{p+pIndicator}{,} \PYG{n+nv}{500}\PYG{p+pIndicator}{,} \PYG{n+nv}{550}\PYG{p+pIndicator}{,} \PYG{n+nv}{600}\PYG{p+pIndicator}{,}
+               \PYG{n+nv}{650}\PYG{p+pIndicator}{,} \PYG{n+nv}{700}\PYG{p+pIndicator}{,} \PYG{n+nv}{750}\PYG{p+pIndicator}{,} \PYG{n+nv}{800}\PYG{p+pIndicator}{,} \PYG{n+nv}{850}\PYG{p+pIndicator}{,} \PYG{n+nv}{900}\PYG{p+pIndicator}{,} \PYG{n+nv}{950}\PYG{p+pIndicator}{,} \PYG{n+nv}{1000}\PYG{p+pIndicator}{,} \PYG{n+nv}{1050}\PYG{p+pIndicator}{,} \PYG{n+nv}{1100}\PYG{p+pIndicator}{]}
+\PYG{n+nt}{Measurements}\PYG{p}{:}
+  \PYG{n+nt}{tmp}\PYG{p}{:} \PYG{l+lScalar+lScalarPlain}{0}
+\PYG{n+nn}{...}
+\end{Verbatim}

@@ -1,0 +1,44 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with`a4paper' for UK/EU standard size
+\usepackage[a4paper,top=2cm,bottom=2cm,left=1cm,right=1cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\usepackage{multicol}
+\usepackage{float}
+
+\usepackage{pgffor}  % For the for-loop
+\usepackage{catchfile} % For inputting the file to comand
+\usepackage{minted}  % For yaml hightlighting
+
+% \title{Your Paper}
+% \author{You}
+
+\CatchFileDef{\figpaths}{filepaths.csv}
+
+\begin{document}
+
+\begin{multicols}{2}
+% Display config-file
+\inputminted{yaml}{runlink/config.yaml}
+
+% Create figures from figpaths-file
+\foreach \figpath in \figpaths
+{
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.45\textwidth]{\figpath}
+\end{figure}
+}
+\end{multicols}
+
+
+\end{document}
