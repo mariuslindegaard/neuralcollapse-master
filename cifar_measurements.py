@@ -244,7 +244,7 @@ def main(args):
         os.makedirs(os.path.join(save_dir_measurements, 'plots'))
 
     ## Make plots for each measurement
-    for name, value in measurements:
+    for name, value in measurements.items():
         plt.plot(logging_cfg['epoch-list'], value, 'rx-')
         plt.title(name)
         plt.savefig(os.path.join(save_dir_measurements, 'plots', f'{name}.pdf'))
