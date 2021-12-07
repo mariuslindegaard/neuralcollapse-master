@@ -32,16 +32,29 @@ class _DatasetWrapper:
         normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                          std=[x/255.0 for x in [63.0, 62.1, 66.7]])
         tx = transforms.Compose([transforms.ToTensor(), normalize])
-        data = datasets.CIFAR10(root='cifar10', train=True, transform=tx, download=download)
-        data.train_labels = th.Tensor(data.train_labels).to(torch.int64)
 
-        data.train_labels = th.nn.functional.one_hot(
-            data.train_labels, num_classes=len(th.unique(data.train_labels))
-        ).float()
+        self.input_shape = (32, 32, 3)
+        self.num_classes = 10
+
+        def target_transform(target):
+            # tmp = th.Tensor(target).to(torch.int64)
+            # tmp = th.nn.functional.one_hot(
+            #     tmp, num_classes=len(th.unique(tmp))
+            # ).float()
+            ret = th.zeros(self.num_classes)
+            ret[target] = 1
+            return ret.float()
+
+        data = datasets.CIFAR10(root='cifar10', train=True, download=download,
+                                transform=tx, target_transform=target_transform)
 
         self.loader = DataLoader(data, batch_size=data_cfg['batch-size'])
-        self.input_shape = data.train_data.shape[1:]  # (32, 32, 3)
-        self.num_classes = data.train_labels.shape[1]  # 10
+        # print(f"In-shape: {data.train_data.shape[1:]},\n"
+        #       f"Out-shape: {data.train_labels.shape[1]}")
+        # print(f"In-shape: {data.data.shape[1:]},\n"
+        #       f"Out-shape: {data.target.shape[1]}")
+        self.input_shape = (32, 32, 3)
+        self.num_classes = 10
 
 
 
