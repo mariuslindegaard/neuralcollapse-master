@@ -15,7 +15,7 @@ Data:
 Optimizer:
   criterion: mse         # Loss type. "mse" for MSE, otherwise cross-entropy
   weight-decay: 5.e-4    # Weight decay
-  epochs: 350            # Epochs to train for
+  epochs: 1100           # Epochs to train for
   lr: 0.067              # Optimizer learning rate
   lr-decay: 0.1          # Learning rate decay
   lr-decay-steps: 3      # Number of learning rate decay steps
