@@ -33,7 +33,7 @@ def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_lis
     for e in range(epochs):
         running_loss = 0.0
         running_accuracy = 0.0
-        pbar = tqdm(total=len(trainloader), position=0, leave=True)
+        pbar = tqdm(total=len(trainloader), position=0, leave=True, ncols=150)
         for batch_idx, (inputs, labels) in enumerate(trainloader, start=1):
 
             if use_cuda:
@@ -52,7 +52,7 @@ def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_lis
 
             pbar.update(1)
             pbar.set_description(
-                'Train\t\tEpoch: {} [{}/{} ({:.0f}%)] \t'
+                'Train\tEpoch: {} [{:>3}/{:>3} ({:>3.0f}%)] \t'
                 'Batch Loss: {:.6f} \t'
                 'Batch Accuracy: {:.6f}'.format(
                     e+1,
@@ -65,7 +65,7 @@ def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_lis
         scheduler.step()
         ebar.update(1)
         ebar.set_description(
-            'Train\t\tEpoch: {}/{} \t'
+            'Train\tEpoch: {}/{} \t'
             'average Epoch Loss: {:.6f} \t'
             'average Epoch Accuracy: {:.6f}'.format(
                 e+1,
