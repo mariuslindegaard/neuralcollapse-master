@@ -3,7 +3,7 @@
 cifar10/
 cifar_regular*/
 _tmp*
-runs/*
+# runs/*
 
 
 ## Default ignores
