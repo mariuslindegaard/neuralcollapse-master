@@ -71,7 +71,7 @@ class Measurements(collections.UserDict):
 
         N = [0 for _ in range(num_classes)]
         mean = [0 for _ in range(num_classes)]
-        Sw = torch.tensor([0])
+        Sw = 0
 
         loss = 0
         net_correct = 0
