@@ -66,8 +66,8 @@ class Measurements(collections.UserDict):
         def feature_hook(self, input, output):
             features.value = input[0].clone()
 
-        model.conv5_sub.conv.register_forward_hook(feature_hook)
-        classifier = model.conv5_sub.conv
+        model.nc_measurements_layer.register_forward_hook(feature_hook)
+        classifier = model.nc_measurements_layer
 
         use_cuda = use_cuda and torch.cuda.is_available()
         if use_cuda:
@@ -229,11 +229,19 @@ def main(args):
     for name, value in measurements.items():
         plt.plot(logging_cfg['epoch-list'], value, 'rx-')
         plt.title(name)
+        plt.grid()
         plt.savefig(os.path.join(save_dir_measurements, 'plots', f'{name}.pdf'))
         plt.close()
+
+
+def test():
+    print("----"*20, "\nTEST OF do_measurements.py\n", "----"*20)
+    args.config = "../config/default.yaml"
+    main(args)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
     main(args)
+    # test()
 

@@ -38,12 +38,14 @@ class NetSimpleConv2FC(nn.Module):
         self.conv6_sub = SubBRC(featIn,featOut, kerSize=1, stride=1, padding='valid', detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
         self.conv6_sub.conv.lastLayer = True
 
+        self.nc_measurements_layer = self.conv6_sub.conv
+
         #featIn = featOut; featOut = numClass
         #self.fc1 = nn.Linear(featIn , featOut)
         self.numClass = numClass
         self.nnsoftmax_layer = nn.Softmax(1) # 2nd dim
 
-        init_convnet(self,init_scale,init_type, bn_affine=affine)
+        init_convnet(self, init_scale, init_type, bn_affine=affine)
 
     def forward(self, x, detached=None, detach_last=None):
         if detach_last is None:
@@ -56,7 +58,7 @@ class NetSimpleConv2FC(nn.Module):
         x = self.conv5_sub(x)
         x = self.conv6_sub(x)
         x = x.squeeze(3).squeeze(2)
-        self.final_out = x  # save the output for computing the loss
+        # self.final_out = x  # save the output for computing the loss
 
         return x
 
@@ -84,8 +86,9 @@ class NetSimpleConv(nn.Module):
         featIn = featOut
         featOut = numClass
         self.conv5_sub = SubBRC(featIn,featOut, kerSize=2, stride=1, padding=0, detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
-
         self.conv5_sub.conv.lastLayer = True
+
+        self.nc_measurements_layer = self.conv5_sub.conv
 
         #featIn = featOut; featOut = numClass
         #self.fc1 = nn.Linear(featIn , featOut)
@@ -106,52 +109,8 @@ class NetSimpleConv(nn.Module):
         x = self.conv4_sub(x)
         x = self.conv5_sub(x)
         x = x.squeeze(3).squeeze(2)
-        self.final_out = x # save the output for computing the loss
+        # self.final_out = x # save the output for computing the loss
 
-        return x
-
-class NetSimpleConv4(nn.Module):
-    def __init__(self, input_channels, hidden_size, numClass, init_scale=1, init_type='const_norm', affine=True, has_nonlinear=1, has_bn=1, bias=True):
-        super(NetSimpleConv4, self).__init__()
-
-        self.hidden_size = hidden_size
-        featIn = input_channels; featOut = hidden_size
-        self.conv1_sub = SubBRC(featIn,featOut, kerSize=3, stride=2, padding=1, detached=False, has_nonlinear=0, has_bn=0, affine=affine, bias=bias)
-
-        featIn = featOut
-        featOut = featOut*2
-        self.conv2_sub = SubBRC(featIn,featOut, kerSize=3, stride=2, padding=1, detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
-
-        featIn = featOut
-        featOut = featOut*2
-        self.conv3_sub = SubBRC(featIn,featOut, kerSize=3, stride=2, padding=1, detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
-
-        featIn = featOut
-        featOut = numClass
-        self.conv5_sub = SubBRC(featIn,featOut, kerSize=4, stride=1, padding=0, detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
-
-        self.conv5_sub.conv.lastLayer = True
-
-        self.last_layer = self.conv5_sub.conv
-
-        #featIn = featOut; featOut = numClass
-        #self.fc1 = nn.Linear(featIn , featOut)
-        self.numClass = numClass
-        self.nnsoftmax_layer = nn.Softmax(1) # 2nd dim
-
-        init_convnet(self,init_scale,init_type, bn_affine=False)
-
-    def forward(self, x, detached=None, detach_last=None):
-        if detach_last is None:
-            detach_last = detached
-
-        x = self.conv1_sub(x)
-        x = self.conv2_sub(x)
-        x = self.conv3_sub(x)
-        x = self.conv5_sub(x)
-        x = x.squeeze(3).squeeze(2)
-
-        self.final_out = x # save the output for computing the loss
         return x
 
 
