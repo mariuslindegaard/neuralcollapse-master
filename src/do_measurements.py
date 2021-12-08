@@ -28,19 +28,6 @@ parser.add_argument('-cfg', '--config', type=str, default="config/default.yaml",
                     help='Config file path. YAML-format expected, see "./config/default.yaml" for format.')
 
 
-# # dataset parameters
-# im_size             = 32
-# C                   = 10
-# input_ch            = 3
-#
-# # analysis parameters
-# epoch_list          = [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
-#                        12,  13,  14,  16,  17,  19,  20,  22,  24,  27,   29,
-#                        32,  35,  38,  42,  45,  50,  54,  59,  65,  71,   77,
-#                        85,  92,  101, 110, 121, 132, 144, 158, 172, 188,  206,
-#                        225, 245, 268, 293, 320, 350, 400, 450, 500, 550, 600,
-#                        650, 700, 750, 800, 850, 900, 950, 1000]
-
 class Measurements(collections.UserDict):
     metrics = ('accuracy', 'loss', 'reg_loss', 'Sw_invSb', 'norm_M_CoV', 'norm_W_CoV', 'cos_M', 'cos_W',
              'W_M_dist', 'NCC_mismatch')
@@ -208,6 +195,8 @@ class Measurements(collections.UserDict):
 
 def main(args):
 
+    import pdb; pdb.set_trace()
+
     # Parse config file
     config_params, \
         (model_cfg, data_cfg, optimizer_cfg, logging_cfg, measurements_cfg), \
@@ -255,6 +244,5 @@ def main(args):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    args.config = "config/1fc.yaml"
     main(args)
 
