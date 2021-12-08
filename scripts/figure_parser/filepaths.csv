@@ -9,7 +9,7 @@ runlink/measurements/plots/Sw_invSb.pdf,
 runlink/measurements/plots/W_M_dist.pdf,
 runlink/measurements/plots/SQI_eps1_avg.pdf,
 runlink/measurements/plots/SQI_eps2_avg.pdf,
-runlink/measurements/plots/SQI_C-1_eps1_over_eps2.pdf,
-runlink/measurements/plots/SQI_eps1_var.pdf,
-runlink/measurements/plots/SQI_eps2_var.pdf,
-runlink/measurements/plots/SQI_eps2_sample_var.pdf%
+runlink/measurements/plots/SQI_eps1_over_C-1_eps2.pdf,
+runlink/measurements/plots/SQI_eps1_rel_std.pdf,
+runlink/measurements/plots/SQI_eps2_rel_std.pdf,
+runlink/measurements/plots/SQI_eps2_sample_rel_std.pdf%

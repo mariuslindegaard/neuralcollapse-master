@@ -23,7 +23,7 @@ parser.add_argument('-cfg', '--config', type=str, default="config/default.yaml",
 class Measurements(collections.UserDict):
     metrics = ('accuracy', 'loss', 'reg_loss', 'Sw_invSb', 'norm_M_CoV', 'norm_W_CoV', 'cos_M', 'cos_W',
                'W_M_dist', 'NCC_mismatch',
-               'SQI_eps1_avg', 'SQI_eps2_avg', 'SQI_C-1_eps1_over_eps2', 'SQI_eps1_var', 'SQI_eps2_var', 'SQI_eps2_sample_var')
+               'SQI_eps1_avg', 'SQI_eps2_avg', 'SQI_eps1_over_C-1_eps2', 'SQI_eps1_rel_std', 'SQI_eps2_rel_std', 'SQI_eps2_sample_rel_std')
 
     def __init__(self,  **kwargs):
         super().__init__(**kwargs)
@@ -66,10 +66,10 @@ class Measurements(collections.UserDict):
 
         self['SQI_eps1_avg'].append(np.mean(eps1))
         self['SQI_eps2_avg'].append(np.mean(eps2))
-        self['SQI_C-1_eps1_over_eps2'].append(self['SQI_eps1_avg'][-1] * (num_classes-1) / self['SQI_eps2_avg'][-1])
-        self['SQI_eps1_var'].append(np.var(eps1))
-        self['SQI_eps2_var'].append(np.var(eps2))
-        self['SQI_eps2_sample_var'].append(np.mean(np.var(eps2, axis=1)))
+        self['SQI_eps1_over_C-1_eps2'].append(self['SQI_eps1_avg'][-1] * (num_classes-1) / self['SQI_eps2_avg'][-1])
+        self['SQI_eps1_rel_std'].append(np.sqrt(np.var(eps1)/self['SQI_eps1_avg'][-1]**2))
+        self['SQI_eps2_rel_std'].append(np.sqrt(np.var(eps2)/self['SQI_eps2_avg'][-1]**2))
+        self['SQI_eps2_sample_rel_std'].append(np.sqrt(np.mean(np.var(eps2, axis=1))/self['SQI_eps2_avg']**2))
 
         self.eps1_array = []
         self.eps2_array = []
