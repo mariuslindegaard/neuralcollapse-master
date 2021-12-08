@@ -48,13 +48,29 @@ class Measurements(collections.UserDict):
         # # NC4
         # self.NCC_mismatch = []
 
+    def _compute_eps_metrics(self, batch_idx: int, outputs: torch.Tensor, labels: torch.Tensor, num_classes: int):
+        """Compute metrics related to epsilon in labels
+
+        Note that both outputs and labels are one-hot encoded
+
+        See 'assumption 1' in [Neural Collapse in Deep Homogenous Classifiers and the Role of Weight Decay,
+        Rangamani and Banburski-Fahey, 2021 (preprint)]
+        By their definitions, epsilon=eps1 and (epsilon/(C-1))=eps2
+        """
+        t = ('SQI_eps', 'SQI_eps_var', 'SQI_symm_dist', 'SQI_eps1', 'SQI_eps2')
+
+        print(outputs.shape, labels.shape)
+
+
+
+
     def compute_metrics(self, model, criterion, dataloader, weight_decay, num_classes, config_params, use_cuda=True):
         self.config_params = config_params
 
         model.eval()
 
         N = [0 for _ in range(num_classes)]
-        mean = [torch.tensor([0]) for _ in range(num_classes)]
+        mean = [0 for _ in range(num_classes)]
         Sw = torch.tensor([0])
 
         loss = 0
@@ -237,12 +253,12 @@ def main(args):
 
 def test():
     print("----"*20, "\nTEST OF do_measurements.py\n", "----"*20)
-    args.config = "../config/cifar_short.yaml"
+    args.config = "../config/cifar_short_2fc.yaml"
     main(args)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    # main(args)
-    test()
+    main(args)
+    # test()
 
