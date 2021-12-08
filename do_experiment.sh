@@ -16,13 +16,10 @@ echo Generating measurements:
 python3 src/do_measurements.py --config $config_file
 echo
 echo Generating output-file:
-python3 scripts/parse_figs.sh $config_file
+./scripts/parse_figs.sh $config_file
 echo
 
-function get_save_dir {
-	grep "  save-dir:" $1 | awk '{print $2}'
-}
-savedir=$( get_save_dir $1 )
+savedir=$( grep "  save-dir:" $1 | awk '{print $2}' )
 date
 echo Finished, output file at $savedir/output.pdf
 
