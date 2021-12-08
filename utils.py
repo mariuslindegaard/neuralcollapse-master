@@ -1,9 +1,10 @@
 import os
+import subprocess
 import shutil
+
 import yaml
 
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 
 
@@ -17,7 +18,9 @@ def init_config(config_path):
     logging_cfg      = config_params['Logging']  # noqa:E221
     measurements_cfg = config_params['Measurements']
 
-    save_dir = logging_cfg['save-dir']
+    git_root_dir = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode('ascii')[:-1]
+    # tmp = subprocess.run(['pwd'])
+    save_dir = os.path.join(git_root_dir, logging_cfg['save-dir'])
     save_dir_data = os.path.join(save_dir, 'data')
     save_dir_measurements = os.path.join(save_dir, 'measurements')
     if not os.path.exists(save_dir_data):
@@ -47,3 +50,5 @@ def get_optimizer(model, optimizer_cfg):
 
     return criterion, optimizer, lr_scheduler
 
+if __name__=='__main__':
+    print(init_config("config/default.yaml"))

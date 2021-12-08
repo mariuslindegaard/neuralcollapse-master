@@ -5,10 +5,10 @@ from torch.autograd import Variable
 
 import our_models
 import data_loader
+import utils
 
 from tqdm import tqdm
 
-import utils
 import os
 import warnings
 
