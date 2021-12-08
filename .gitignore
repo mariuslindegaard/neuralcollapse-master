@@ -1,7 +1,7 @@
 ## My ignores
 .DS_Store
 cifar10/
-cifar_regular*/
+mnist/
 _tmp*
 # runs/*
 scripts/figure_parser/_minted-main/*

@@ -5,17 +5,16 @@ from torch.autograd import Variable
 
 import our_models
 import data_loader
+import utils
 
 from tqdm import tqdm
 
-import utils
 import os
 import warnings
 
 parser = argparse.ArgumentParser(description='Simple ConvNet training on MNIST to achieve neural collapse')
 parser.add_argument('-cfg', '--config', type=str, default='config/default.yaml',
                     help='Config file path. YAML-format expected, see "./config/default.yaml" for format.')
-# TODO(marius): Add argument to run measurements immediately after finishing
 
 def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_list, save_dir, config_params, one_hot=False, use_cuda=False):
     use_cuda = use_cuda and torch.cuda.is_available()
@@ -92,6 +91,7 @@ def main(args):
     model_ref = getattr(our_models, model_cfg['model-name'])
     model = model_ref(image_ch, image_size, num_classes,
                              init_scale=model_cfg['init-scale'], bias=not model_cfg['no-bias'])
+    print("Using model:\n", model)
 
     # Get optimizer from config
     criterion, optimizer, lr_scheduler = utils.get_optimizer(model, optimizer_cfg)

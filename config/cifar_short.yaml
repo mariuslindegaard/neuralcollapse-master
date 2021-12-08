@@ -1,0 +1,28 @@
+---
+# Neural collapse config file. All must be specified
+Model:
+  model-name: NetSimpleConv  # Name of model in "our_models"
+  no-bias: false             # model param
+  init-scale: 1.0            # Initialization scale for network weights
+
+Data:
+  dataset-id: cifar10    # Which dataset-getter to use. Note that shapes are provided by the dataset
+  batch-size: 128        # Mini-batch size
+
+Optimizer:
+  criterion: mse         # Loss type. "mse" for MSE, otherwise cross-entropy
+  weight-decay: 5.e-4    # Weight decay
+  epochs: 2              # Epochs to train for
+  lr: 0.067              # Optimizer learning rate
+  lr-decay: 0.1          # Learning rate decay
+  lr-decay-steps: 3      # Number of learning rate decay steps
+  momentum: 0.9          # Optimizer momentum
+
+Logging:
+  # When to store weights and calculate measurements
+  save-dir: runs/cifar_short
+  epoch-list: [1,   2]
+
+Measurements:
+  tmp: 0
+...

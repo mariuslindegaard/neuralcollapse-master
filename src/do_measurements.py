@@ -1,16 +1,7 @@
 import numpy as np
-import scipy as sp
 from scipy.sparse.linalg import svds
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from torch.autograd import Variable
-
-from torchvision import models, datasets, transforms
-from torch.utils.data import DataLoader, Subset
-
-from our_models import NetSimpleConv,NetSimpleConv4, NetSimpleConv2FC
 
 import matplotlib.pyplot as plt
 import pickle
@@ -18,6 +9,7 @@ import argparse
 import os
 import collections
 from tqdm import tqdm
+import warnings
 
 import utils
 import data_loader
@@ -27,19 +19,6 @@ parser = argparse.ArgumentParser(description='Neural Collapse measurement script
 parser.add_argument('-cfg', '--config', type=str, default="config/default.yaml",
                     help='Config file path. YAML-format expected, see "./config/default.yaml" for format.')
 
-
-# # dataset parameters
-# im_size             = 32
-# C                   = 10
-# input_ch            = 3
-#
-# # analysis parameters
-# epoch_list          = [1,   2,   3,   4,   5,   6,   7,   8,   9,   10,   11,
-#                        12,  13,  14,  16,  17,  19,  20,  22,  24,  27,   29,
-#                        32,  35,  38,  42,  45,  50,  54,  59,  65,  71,   77,
-#                        85,  92,  101, 110, 121, 132, 144, 158, 172, 188,  206,
-#                        225, 245, 268, 293, 320, 350, 400, 450, 500, 550, 600,
-#                        650, 700, 750, 800, 850, 900, 950, 1000]
 
 class Measurements(collections.UserDict):
     metrics = ('accuracy', 'loss', 'reg_loss', 'Sw_invSb', 'norm_M_CoV', 'norm_W_CoV', 'cos_M', 'cos_W',
@@ -230,7 +209,8 @@ def main(args):
     # Train model
     # train(model, criterion, optimizer, lr_scheduler, trainloader, optimizer_cfg['epochs'], logging_cfg['epoch-list'],
     #       save_dir_data, config_params, one_hot=optimizer_cfg['criterion'] == 'mse', use_cuda=True)
-
+    if logging_cfg['epoch-list'][-1] != optimizer_cfg['epochs']:
+        warnings.warn(f"Epoch-list does not end at number of epochs, {logging_cfg['epoch-list'][-1]} is not {optimizer_cfg['epochs']}")
     measurements = Measurements()
     for e in logging_cfg['epoch-list']:  # TODO(marius): Make dependent on number of epochs, or throw an error when epochs<epoch_list[-1]
         print('Loading %s : %d.pt'%(save_dir_data,e))
@@ -255,6 +235,5 @@ def main(args):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    args.config = "config/1fc.yaml"
     main(args)
 
