@@ -1,7 +1,7 @@
 ---
 # Neural collapse config file. All must be specified
 Model:
-  model-name: NetSimpleConv2FC  # Name of model in "our_models"
+  model-name: NetSimpleConv  # Name of model in "our_models"
   no-bias: false             # model param
   init-scale: 1.0            # Initialization scale for network weights
 
