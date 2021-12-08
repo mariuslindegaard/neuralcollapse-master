@@ -6,4 +6,10 @@ runlink/measurements/plots/norm_M_CoV.pdf,
 runlink/measurements/plots/norm_W_CoV.pdf,
 runlink/measurements/plots/reg_loss.pdf,
 runlink/measurements/plots/Sw_invSb.pdf,
-runlink/measurements/plots/W_M_dist.pdf%
+runlink/measurements/plots/W_M_dist.pdf,
+runlink/measurements/plots/SQI_eps1_avg.pdf,
+runlink/measurements/plots/SQI_eps2_avg.pdf,
+runlink/measurements/plots/SQI_C-1_eps1_over_eps2.pdf,
+runlink/measurements/plots/SQI_eps1_var.pdf,
+runlink/measurements/plots/SQI_eps2_var.pdf,
+runlink/measurements/plots/SQI_eps2_sample_var.pdf%

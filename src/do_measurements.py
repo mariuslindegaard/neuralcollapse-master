@@ -22,34 +22,23 @@ parser.add_argument('-cfg', '--config', type=str, default="config/default.yaml",
 
 class Measurements(collections.UserDict):
     metrics = ('accuracy', 'loss', 'reg_loss', 'Sw_invSb', 'norm_M_CoV', 'norm_W_CoV', 'cos_M', 'cos_W',
-             'W_M_dist', 'NCC_mismatch') # , 'SQI_eps', 'SQI_eps_var', 'SQI_symm_dist', 'SQI_e1', 'SQI_e2')
+               'W_M_dist', 'NCC_mismatch',
+               'SQI_eps1_avg', 'SQI_eps2_avg', 'SQI_C-1_eps1_over_eps2', 'SQI_eps1_var', 'SQI_eps2_var', 'SQI_eps2_sample_var')
 
     def __init__(self,  **kwargs):
         super().__init__(**kwargs)
         for metric in self.metrics:
             self[metric] = list()
         self.config_params = None
-        # self.accuracy     = []
-        # self.loss         = []
-        # self.reg_loss     = []
+        self.eps1_array = []
+        self.eps2_array = []
+        # # NC1: Sw_invSb
+        # # NC2: norm_M_CoV norm_W_CoV cos_M cos_W
+        # # NC3: W_M_dist
+        # # NC4: NCC_mismatch
 
-        # # NC1
-        # self.Sw_invSb     = []
-
-        # # NC2
-        # self.norm_M_CoV   = []
-        # self.norm_W_CoV   = []
-        # self.cos_M        = []
-        # self.cos_W        = []
-
-        # # NC3
-        # self.W_M_dist     = []
-
-        # # NC4
-        # self.NCC_mismatch = []
-
-    def _compute_eps_metrics(self, batch_idx: int, outputs: torch.Tensor, labels: torch.Tensor, num_classes: int):
-        """Compute metrics related to epsilon in labels
+    def _store_eps_metrics(self, outputs: torch.Tensor, labels: torch.Tensor, num_classes: int):
+        """Store metrics related to epsilon in labels
 
         Note that both outputs and labels are one-hot encoded
 
@@ -57,11 +46,33 @@ class Measurements(collections.UserDict):
         Rangamani and Banburski-Fahey, 2021 (preprint)]
         By their definitions, epsilon=eps1 and (epsilon/(C-1))=eps2
         """
-        t = ('SQI_eps', 'SQI_eps_var', 'SQI_symm_dist', 'SQI_eps1', 'SQI_eps2')
+        # Detach, transfer to cpy and to a numpy-array to reduce gradient memory cost etc.
+        np_outputs = outputs.detach().cpu().numpy()
+        np_labels = labels.detach().cpu().numpy()
 
-        print(outputs.shape, labels.shape)
+        label_idxs = np_labels == 1  # A mask where only the correct index (label==1) is True, otherwise false
+        eps1 = 1-np_outputs[label_idxs]  # Assuming output is (1-eps_1) for each correct label
+        eps2 = np_outputs[np.logical_not(label_idxs)].reshape((-1, num_classes-1))  # Assuming output is (eps_2) for each incorrect label
 
+        self.eps1_array.append(eps1)
+        self.eps2_array.append(eps2)
 
+    def _compute_eps_metrics(self):
+        """Compute eps metrics stored by self._store_eps_metrics"""
+        eps1 = np.concatenate(self.eps1_array, axis=0)
+        eps2 = np.concatenate(self.eps2_array, axis=0)
+
+        num_classes = 1 + eps2.shape[1]
+
+        self['SQI_eps1_avg'].append(np.mean(eps1))
+        self['SQI_eps2_avg'].append(np.mean(eps2))
+        self['SQI_C-1_eps1_over_eps2'].append(self['SQI_eps1_avg'][-1] * (num_classes-1) / self['SQI_eps2_avg'][-1])
+        self['SQI_eps1_var'].append(np.var(eps1))
+        self['SQI_eps2_var'].append(np.var(eps2))
+        self['SQI_eps2_sample_var'].append(np.mean(np.var(eps2, axis=1)))
+
+        self.eps1_array = []
+        self.eps2_array = []
 
 
     def compute_metrics(self, model, criterion, dataloader, weight_decay, num_classes, config_params, use_cuda=True):
@@ -113,6 +124,11 @@ class Measurements(collections.UserDict):
                 # update class means
                 mean[c] += torch.sum(h_c, dim=0)  #  CHW
                 N[c] += h_c.shape[0]
+
+            # Calculate epsilon metrics:
+            self._store_eps_metrics(outputs, labels, num_classes)
+
+        self._compute_eps_metrics()
 
         for c in range(num_classes):
             mean[c] /= N[c]
@@ -228,8 +244,9 @@ def main(args):
     #       save_dir_data, config_params, one_hot=optimizer_cfg['criterion'] == 'mse', use_cuda=True)
     if logging_cfg['epoch-list'][-1] != optimizer_cfg['epochs']:
         warnings.warn(f"Epoch-list does not end at number of epochs, {logging_cfg['epoch-list'][-1]} is not {optimizer_cfg['epochs']}")
+
     measurements = Measurements()
-    for e in logging_cfg['epoch-list']:  # TODO(marius): Make dependent on number of epochs, or throw an error when epochs<epoch_list[-1]
+    for e in logging_cfg['epoch-list']:
         print('Loading %s : %d.pt'%(save_dir_data,e))
         model.load_state_dict(torch.load(os.path.join(save_dir_data, f'{e}.pt'), map_location=torch.device('cpu')))
 
@@ -261,4 +278,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main(args)
     # test()
-
