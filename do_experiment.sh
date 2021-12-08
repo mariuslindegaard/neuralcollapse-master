@@ -8,10 +8,10 @@ echo Running experiment with config-file $config_file
 
 echo
 echo Training nnet:
-python3 src/cifar_training.py --config $config_file
+python3 src/do_training.py --config $config_file
 echo
 echo Generating measurements:
-python3 src/cifar_measurements.py --config $config_file
+python3 src/do_measurements.py --config $config_file
 echo
 echo Generating output-file:
 python3 scripts/parse_figs.sh $config_file
