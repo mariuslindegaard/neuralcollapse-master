@@ -20,7 +20,7 @@ Optimizer:
 
 Logging:
   # When to store weights and calculate measurements
-  save-dir: runs/cifar_short
+  save-dir: runs/cifar_short_2fc
   epoch-list: [1,   2]
 
 Measurements:
