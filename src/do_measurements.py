@@ -1,16 +1,7 @@
 import numpy as np
-import scipy as sp
 from scipy.sparse.linalg import svds
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from torch.autograd import Variable
-
-from torchvision import models, datasets, transforms
-from torch.utils.data import DataLoader, Subset
-
-from our_models import NetSimpleConv,NetSimpleConv4, NetSimpleConv2FC
 
 import matplotlib.pyplot as plt
 import pickle
@@ -18,6 +9,7 @@ import argparse
 import os
 import collections
 from tqdm import tqdm
+import warnings
 
 import utils
 import data_loader
@@ -217,7 +209,8 @@ def main(args):
     # Train model
     # train(model, criterion, optimizer, lr_scheduler, trainloader, optimizer_cfg['epochs'], logging_cfg['epoch-list'],
     #       save_dir_data, config_params, one_hot=optimizer_cfg['criterion'] == 'mse', use_cuda=True)
-
+    if logging_cfg['epoch-list'][-1] != optimizer_cfg['epochs']:
+        warnings.warn(f"Epoch-list does not end at number of epochs, {logging_cfg['epoch-list'][-1]} is not {optimizer_cfg['epochs']}")
     measurements = Measurements()
     for e in logging_cfg['epoch-list']:  # TODO(marius): Make dependent on number of epochs, or throw an error when epochs<epoch_list[-1]
         print('Loading %s : %d.pt'%(save_dir_data,e))

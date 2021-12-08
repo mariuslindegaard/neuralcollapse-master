@@ -19,7 +19,6 @@ def init_config(config_path):
     measurements_cfg = config_params['Measurements']
 
     git_root_dir = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode('ascii')[:-1]
-    # tmp = subprocess.run(['pwd'])
     save_dir = os.path.join(git_root_dir, logging_cfg['save-dir'])
     save_dir_data = os.path.join(save_dir, 'data')
     save_dir_measurements = os.path.join(save_dir, 'measurements')
