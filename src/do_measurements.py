@@ -22,12 +22,13 @@ parser.add_argument('-cfg', '--config', type=str, default="config/default.yaml",
 
 class Measurements(collections.UserDict):
     metrics = ('accuracy', 'loss', 'reg_loss', 'Sw_invSb', 'norm_M_CoV', 'norm_W_CoV', 'cos_M', 'cos_W',
-             'W_M_dist', 'NCC_mismatch')
+             'W_M_dist', 'NCC_mismatch') # , 'SQI_eps', 'SQI_eps_var', 'SQI_symm_dist', 'SQI_e1', 'SQI_e2')
 
     def __init__(self,  **kwargs):
         super().__init__(**kwargs)
         for metric in self.metrics:
             self[metric] = list()
+        self.config_params = None
         # self.accuracy     = []
         # self.loss         = []
         # self.reg_loss     = []
@@ -53,8 +54,8 @@ class Measurements(collections.UserDict):
         model.eval()
 
         N = [0 for _ in range(num_classes)]
-        mean = [0 for _ in range(num_classes)]
-        Sw = 0
+        mean = [torch.tensor([0]) for _ in range(num_classes)]
+        Sw = torch.tensor([0])
 
         loss = 0
         net_correct = 0
@@ -157,20 +158,20 @@ class Measurements(collections.UserDict):
         Sb = Sb.cpu().numpy()
         eigvec, eigval, _ = svds(Sb, k=num_classes - 1)
         inv_Sb = eigvec @ np.diag(eigval ** (-1)) @ eigvec.T
-        self['Sw_invSb'].append(np.trace(Sw @ inv_Sb))  # TODO: Fault
+        self['Sw_invSb'].append(np.trace(Sw @ inv_Sb))  # Gets divide by 0 for the first epochs, it is fine...
 
         # avg norm
         W = classifier.weight.view(num_classes, -1)
         M_norms = torch.norm(M_, dim=0)
         W_norms = torch.norm(W.T, dim=0)
 
-        self['norm_M_CoV'].append((torch.std(M_norms) / torch.mean(M_norms)).item())  # TODO: Fault
+        self['norm_M_CoV'].append((torch.std(M_norms) / torch.mean(M_norms)).item())
         self['norm_W_CoV'].append((torch.std(W_norms) / torch.mean(W_norms)).item())
 
         # ||W^T - M_||
         normalized_M = M_ / torch.norm(M_, 'fro')
         normalized_W = W.T / torch.norm(W.T, 'fro')
-        self['W_M_dist'].append((torch.norm(normalized_W - normalized_M) ** 2).item())  # TODO: Fault
+        self['W_M_dist'].append((torch.norm(normalized_W - normalized_M) ** 2).item())
 
         # mutual coherence
         def coherence(V, C):
@@ -182,7 +183,7 @@ class Measurements(collections.UserDict):
             G -= torch.diag(torch.diag(G))
             return torch.norm(G, 1).item() / (C * (C - 1))
 
-        self['cos_M'].append(coherence(M_ / M_norms, num_classes))  # TODO: Fault
+        self['cos_M'].append(coherence(M_ / M_norms, num_classes))
         self['cos_W'].append(coherence(W.T / W_norms, num_classes))
 
 def main(args):
@@ -236,12 +237,12 @@ def main(args):
 
 def test():
     print("----"*20, "\nTEST OF do_measurements.py\n", "----"*20)
-    args.config = "../config/default.yaml"
+    args.config = "../config/cifar_short.yaml"
     main(args)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    main(args)
-    # test()
+    # main(args)
+    test()
 
