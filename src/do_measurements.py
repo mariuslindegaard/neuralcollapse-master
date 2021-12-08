@@ -195,8 +195,6 @@ class Measurements(collections.UserDict):
 
 def main(args):
 
-    import pdb; pdb.set_trace()
-
     # Parse config file
     config_params, \
         (model_cfg, data_cfg, optimizer_cfg, logging_cfg, measurements_cfg), \
