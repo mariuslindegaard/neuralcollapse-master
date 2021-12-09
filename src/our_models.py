@@ -38,6 +38,7 @@ class NetSimpleConv2FC(nn.Module):
         self.conv6_sub = SubBRC(featIn,featOut, kerSize=1, stride=1, padding='valid', detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
         self.conv6_sub.conv.lastLayer = True
 
+        self.second_to_last = self.conv5_sub.conv
         self.nc_measurements_layer = self.conv6_sub.conv
 
         #featIn = featOut; featOut = numClass
@@ -88,6 +89,7 @@ class NetSimpleConv(nn.Module):
         self.conv5_sub = SubBRC(featIn,featOut, kerSize=2, stride=1, padding=0, detached=False, has_nonlinear=has_nonlinear, has_bn=has_bn, affine=affine, bias=bias)
         self.conv5_sub.conv.lastLayer = True
 
+        self.second_to_last = None
         self.nc_measurements_layer = self.conv5_sub.conv
 
         #featIn = featOut; featOut = numClass
