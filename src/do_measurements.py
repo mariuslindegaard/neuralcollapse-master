@@ -66,16 +66,16 @@ class Measurements(collections.UserDict):
 
         self['SQI_eps1_avg'].append(np.mean(eps1))
         self['SQI_eps2_avg'].append(np.mean(eps2))
-        self['SQI_eps1_over_C-1_eps2'].append(self['SQI_eps1_avg'][-1] * (num_classes-1) / self['SQI_eps2_avg'][-1])
+        self['SQI_eps1_over_C-1_eps2'].append(self['SQI_eps1_avg'][-1]  / (self['SQI_eps2_avg'][-1] * (num_classes-1)))
         self['SQI_eps1_rel_std'].append(np.sqrt(np.var(eps1)/self['SQI_eps1_avg'][-1]**2))
         self['SQI_eps2_rel_std'].append(np.sqrt(np.var(eps2)/self['SQI_eps2_avg'][-1]**2))
         self['SQI_eps2_sample_rel_std'].append(np.sqrt(np.mean(np.var(eps2, axis=1))/self['SQI_eps2_avg'][-1]**2))
 
+
+    def compute_metrics(self, model, criterion, dataloader, weight_decay, num_classes, config_params, use_cuda=True):
         self.eps1_array = []
         self.eps2_array = []
 
-
-    def compute_metrics(self, model, criterion, dataloader, weight_decay, num_classes, config_params, use_cuda=True):
         self.config_params = config_params
 
         model.eval()
