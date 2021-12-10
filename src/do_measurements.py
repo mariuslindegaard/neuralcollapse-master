@@ -18,6 +18,8 @@ import our_models
 parser = argparse.ArgumentParser(description='Neural Collapse measurement script on CIFAR10')
 parser.add_argument('-cfg', '--config', type=str, default="config/default.yaml",
                     help='Config file path. YAML-format expected, see "./config/default.yaml" for format.')
+parser.add_argument('-stl', action='store_true',
+                    help='Use analysis for second-to-last layer (assuming 2fc-model has been used)')
 
 
 class Measurements(collections.UserDict):
@@ -72,7 +74,8 @@ class Measurements(collections.UserDict):
         self['SQI_eps2_sample_rel_std'].append(np.sqrt(np.mean(np.var(eps2, axis=1))/self['SQI_eps2_avg'][-1]**2))
 
 
-    def compute_metrics(self, model, criterion, dataloader, weight_decay, num_classes, config_params, use_cuda=True):
+    def compute_metrics(self, model, criterion, dataloader, weight_decay, num_classes, config_params,
+                        second_to_last=False, use_cuda=True):
         self.eps1_array = []
         self.eps2_array = []
 
@@ -94,17 +97,27 @@ class Measurements(collections.UserDict):
         def feature_hook(self, input, output):
             features.value = input[0].clone()
 
-        model.nc_measurements_layer.register_forward_hook(feature_hook)
-        classifier = model.nc_measurements_layer
+        if not second_to_last:
+            model.nc_measurements_layer.register_forward_hook(feature_hook)
+            classifier = model.nc_measurements_layer
+        else:
+            model.second_to_last = model.conv5_sub.conv
+            model.second_to_last.register_forward_hook(feature_hook)
+            classifier = model.second_to_last
+
+            def feature_hook_next(self, input, output):
+                features.value_next = input[0].clone()
+            model.nc_measurements_layer.register_forward_hook(feature_hook_next)
+            classifier_next = model.nc_measurements_layer
+
+        print(classifier)
 
         use_cuda = use_cuda and torch.cuda.is_available()
         if use_cuda:
             model = model.cuda()
             criterion = criterion.cuda()
 
-        print("First loop:")
-        for batch_idx, (inputs, labels) in tqdm(enumerate(dataloader), total=len(dataloader)):
-            # labels -= 1  # Remove since the results are already 0-indexed
+        for batch_idx, (inputs, labels) in enumerate(dataloader):
             # import pdb; pdb.set_trace()
             if use_cuda:
                 inputs = Variable(inputs.cuda())
@@ -130,13 +143,20 @@ class Measurements(collections.UserDict):
 
         self._compute_eps_metrics()
 
+        mean_post_conv = list(map(torch.flatten,
+                                  map(model.second_to_last,
+                                      map(lambda m: m.reshape((1, -1, 2, 2)),
+                                          mean)
+                                      )
+                                  ))
+
         for c in range(num_classes):
             mean[c] /= N[c]
-        M = torch.stack(mean).T
+        M = torch.stack(mean).T  # Mean of classes before layer
+        M_post = torch.stack(mean_post_conv).T  # Mean of classes after layer
         loss /= sum(N)
 
-        print("Second loop:")
-        for batch_idx, (inputs, labels) in tqdm(enumerate(dataloader), total=len(dataloader)):
+        for batch_idx, (inputs, labels) in enumerate(dataloader):
             if use_cuda:
                 inputs = Variable(inputs.cuda())
                 labels = Variable(labels.cuda())
@@ -183,6 +203,7 @@ class Measurements(collections.UserDict):
 
         # between-class covariance
         M_ = M - muG
+        M_post_ = M_post - torch.mean(M_post, dim=1, keepdim=True)
         Sb = torch.matmul(M_, M_.T) / num_classes
 
         # tr{Sw Sb^-1}
@@ -192,8 +213,15 @@ class Measurements(collections.UserDict):
         inv_Sb = eigvec @ np.diag(eigval ** (-1)) @ eigvec.T
         self['Sw_invSb'].append(np.trace(Sw @ inv_Sb))  # Gets divide by 0 for the first epochs, it is fine...
 
+        if second_to_last:
+            next_layer_width = classifier.weight.shape[1]
+        else:
+            next_layer_width = num_classes
+
         # avg norm
-        W = classifier.weight.view(num_classes, -1)
+        W = classifier.weight.view(next_layer_width, -1)
+        if second_to_last: # Make W refer to class means
+            W = (W.T@M_post).T
         M_norms = torch.norm(M_, dim=0)
         W_norms = torch.norm(W.T, dim=0)
 
@@ -203,6 +231,7 @@ class Measurements(collections.UserDict):
         # ||W^T - M_||
         normalized_M = M_ / torch.norm(M_, 'fro')
         normalized_W = W.T / torch.norm(W.T, 'fro')
+        # TODO(marius): Add W for next layer for 2fc
         self['W_M_dist'].append((torch.norm(normalized_W - normalized_M) ** 2).item())
 
         # mutual coherence
@@ -218,7 +247,7 @@ class Measurements(collections.UserDict):
         self['cos_M'].append(coherence(M_ / M_norms, num_classes))
         self['cos_W'].append(coherence(W.T / W_norms, num_classes))
 
-def main(args):
+def main(args, second_to_last = False):
 
     # Parse config file
     config_params, \
@@ -245,13 +274,20 @@ def main(args):
     if logging_cfg['epoch-list'][-1] != optimizer_cfg['epochs']:
         warnings.warn(f"Epoch-list does not end at number of epochs, {logging_cfg['epoch-list'][-1]} is not {optimizer_cfg['epochs']}")
 
+    if second_to_last:
+        print("Using second-to last layer!")
+        save_dir_measurements = os.path.join(save_dir, 'stl_measurements')
+        if not os.path.exists(save_dir_measurements):
+            os.makedirs(save_dir_measurements)
+
+
+    print("One iteration step takes approx. 1-5 minutes")
     measurements = Measurements()
-    for e in logging_cfg['epoch-list']:
-        print('Loading %s : %d.pt'%(save_dir_data,e))
+    for e in tqdm(logging_cfg['epoch-list']):
         model.load_state_dict(torch.load(os.path.join(save_dir_data, f'{e}.pt'), map_location=torch.device('cpu')))
 
         measurements.compute_metrics(model, criterion, trainloader, optimizer_cfg['weight-decay'], num_classes,
-                                     config_params, use_cuda=True)
+                                     config_params, second_to_last=second_to_last, use_cuda=True)
 
     with open(os.path.join(save_dir_measurements, 'measurements.pkl'), 'wb') as f:
         pickle.dump(measurements, f)
@@ -271,10 +307,10 @@ def main(args):
 def test():
     print("----"*20, "\nTEST OF do_measurements.py\n", "----"*20)
     args.config = "../config/cifar_short_2fc.yaml"
-    main(args)
+    main(args, second_to_last=True)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    main(args)
+    main(args, second_to_last=args.stl)
     # test()
