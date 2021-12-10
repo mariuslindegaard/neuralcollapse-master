@@ -143,17 +143,19 @@ class Measurements(collections.UserDict):
 
         self._compute_eps_metrics()
 
-        mean_post_conv = list(map(torch.flatten,
-                                  map(model.second_to_last,
-                                      map(lambda m: m.reshape((1, -1, 2, 2)),
-                                          mean)
-                                      )
-                                  ))
+        if second_to_last:
+            mean_post_conv = list(map(torch.flatten,
+                                      map(model.second_to_last,
+                                          map(lambda m: m.reshape((1, -1, 2, 2)),
+                                              mean)
+                                          )
+                                      ))
 
         for c in range(num_classes):
             mean[c] /= N[c]
         M = torch.stack(mean).T  # Mean of classes before layer
-        M_post = torch.stack(mean_post_conv).T  # Mean of classes after layer
+        if second_to_last:
+            M_post = torch.stack(mean_post_conv).T  # Mean of classes after layer
         loss /= sum(N)
 
         for batch_idx, (inputs, labels) in enumerate(dataloader):
@@ -203,7 +205,8 @@ class Measurements(collections.UserDict):
 
         # between-class covariance
         M_ = M - muG
-        M_post_ = M_post - torch.mean(M_post, dim=1, keepdim=True)
+        if second_to_last:
+            M_post_ = M_post - torch.mean(M_post, dim=1, keepdim=True)
         Sb = torch.matmul(M_, M_.T) / num_classes
 
         # tr{Sw Sb^-1}
