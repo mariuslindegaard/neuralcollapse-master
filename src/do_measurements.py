@@ -262,7 +262,7 @@ def main(args, second_to_last = False):
 
     # Get model from config and dataset params
     model_ref = getattr(our_models, model_cfg['model-name'])
-    model = model_ref(image_ch, image_size, num_classes,
+    model = model_ref(image_ch, image_size, num_classes, use_softmax=optimizer_cfg['criterion'] != 'mse',
                       init_scale=model_cfg['init-scale'], bias=not model_cfg['no-bias'])
 
     # TODO(marius): Why does model have init_scale=0.01? Does it even matter, seeing as we overload the weights anyway?

@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description='Simple ConvNet training on MNIST t
 parser.add_argument('-cfg', '--config', type=str, default='config/default.yaml',
                     help='Config file path. YAML-format expected, see "./config/default.yaml" for format.')
 
-def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_list, save_dir, config_params, one_hot=False, use_cuda=False):
+def train(model, criterion, optimizer, scheduler, trainloader, epochs, epoch_list, save_dir, config_params, use_cuda=False):
     use_cuda = use_cuda and torch.cuda.is_available()
 
     if use_cuda:
@@ -89,8 +89,8 @@ def main(args):
 
     # Get model from config and dataset params
     model_ref = getattr(our_models, model_cfg['model-name'])
-    model = model_ref(image_ch, image_size, num_classes,
-                             init_scale=model_cfg['init-scale'], bias=not model_cfg['no-bias'])
+    model = model_ref(image_ch, image_size, num_classes, use_softmax=optimizer_cfg['criterion'] != 'mse',
+                      init_scale=model_cfg['init-scale'], bias=not model_cfg['no-bias'])
     print("Using model:\n", model)
 
     # Get optimizer from config
@@ -98,7 +98,7 @@ def main(args):
 
     # Train model
     train(model, criterion, optimizer, lr_scheduler, trainloader, optimizer_cfg['epochs'], logging_cfg['epoch-list'],
-          save_dir_data, config_params, one_hot=optimizer_cfg['criterion'] == 'mse', use_cuda=True)
+          save_dir_data, config_params, use_cuda=True)
 
 
 if __name__ == "__main__":

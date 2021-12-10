@@ -4,9 +4,11 @@ import torch.nn as nn
 from our_layers import *
 
 class NetSimpleConv2FC(nn.Module):
-    def __init__(self, input_channels, hidden_size, numClass, fcWidth=256,
+    def __init__(self, input_channels, hidden_size, numClass, fcWidth=256, use_softmax=True,
                  init_scale=1, init_type='const_norm', affine=True, has_nonlinear=1, has_bn=1, bias=True):
         super(NetSimpleConv2FC, self).__init__()
+
+        self.use_softmax = use_softmax
 
         self.hidden_size = hidden_size
         featIn = input_channels
@@ -44,7 +46,8 @@ class NetSimpleConv2FC(nn.Module):
         #featIn = featOut; featOut = numClass
         #self.fc1 = nn.Linear(featIn , featOut)
         self.numClass = numClass
-        self.nnsoftmax_layer = nn.Softmax(1) # 2nd dim
+        if self.use_softmax:
+            self.nnsoftmax_layer = nn.Softmax(1) # 2nd dim
 
         init_convnet(self, init_scale, init_type, bn_affine=affine)
 
@@ -59,13 +62,18 @@ class NetSimpleConv2FC(nn.Module):
         x = self.conv5_sub(x)
         x = self.conv6_sub(x)
         x = x.squeeze(3).squeeze(2)
+        if self.use_softmax:
+            x = self.nnsoftmax_layer(x)
         # self.final_out = x  # save the output for computing the loss
 
         return x
 
 class NetSimpleConv(nn.Module):
-    def __init__(self, input_channels, hidden_size, numClass, init_scale=1, init_type='const_norm', affine=True, has_nonlinear=1, has_bn=1, bias=True):
+    def __init__(self, input_channels, hidden_size, numClass, init_scale=1, init_type='const_norm', use_softmax=False,
+                 affine=True, has_nonlinear=1, has_bn=1, bias=True):
         super(NetSimpleConv, self).__init__()
+
+        self.use_softmax = use_softmax
 
         self.hidden_size = hidden_size
         featIn = input_channels
@@ -90,7 +98,8 @@ class NetSimpleConv(nn.Module):
         self.conv5_sub.conv.lastLayer = True
 
         self.second_to_last = None
-        self.nc_measurements_layer = self.conv5_sub.conv
+        if self.use_softmax:
+            self.nc_measurements_layer = self.conv5_sub.conv
 
         #featIn = featOut; featOut = numClass
         #self.fc1 = nn.Linear(featIn , featOut)
@@ -111,6 +120,8 @@ class NetSimpleConv(nn.Module):
         x = self.conv4_sub(x)
         x = self.conv5_sub(x)
         x = x.squeeze(3).squeeze(2)
+        if self.use_softmax:
+            x = self.nnsoftmax_layer(x)
         # self.final_out = x # save the output for computing the loss
 
         return x
