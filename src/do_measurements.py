@@ -110,7 +110,7 @@ class Measurements(collections.UserDict):
             model.nc_measurements_layer.register_forward_hook(feature_hook_next)
             classifier_next = model.nc_measurements_layer
 
-        print(classifier)
+        # print(classifier)
 
         use_cuda = use_cuda and torch.cuda.is_available()
         if use_cuda:
