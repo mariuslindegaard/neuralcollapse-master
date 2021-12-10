@@ -9,6 +9,7 @@ scripts/figure_parser/*.aux
 scripts/figure_parser/*.log
 scripts/figure_parser/main.pdf
 scripts/figure_parser/runlink
+scripts/figure_parser/_latex_plot_paths.csv
 
 
 ## Default ignores
