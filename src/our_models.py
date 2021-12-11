@@ -98,8 +98,7 @@ class NetSimpleConv(nn.Module):
         self.conv5_sub.conv.lastLayer = True
 
         self.second_to_last = None
-        if self.use_softmax:
-            self.nc_measurements_layer = self.conv5_sub.conv
+        self.nc_measurements_layer = self.conv5_sub.conv
 
         #featIn = featOut; featOut = numClass
         #self.fc1 = nn.Linear(featIn , featOut)
