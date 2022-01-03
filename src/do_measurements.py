@@ -158,6 +158,9 @@ class Measurements(collections.UserDict):
             M_post = torch.stack(mean_post_conv).T  # Mean of classes after layer
         loss /= sum(N)
 
+        do_stl_analysis = True and second_to_last
+        all_stl_activations = []
+
         for batch_idx, (inputs, labels) in enumerate(dataloader):
             if use_cuda:
                 inputs = Variable(inputs.cuda())
@@ -165,6 +168,10 @@ class Measurements(collections.UserDict):
             outputs = model(inputs)
 
             h = features.value.data.view(inputs.shape[0], -1)  # B CHW
+
+            if True or do_stl_analysis:
+                all_stl_activations.append(h.detach().cpu().numpy())
+
             for c in range(num_classes):
                 # features belonging to class c
                 idxs = (torch.argmax(labels, dim=1) == c).nonzero(as_tuple=True)[0]
@@ -215,6 +222,29 @@ class Measurements(collections.UserDict):
         eigvec, eigval, _ = svds(Sb, k=num_classes - 1)
         inv_Sb = eigvec @ np.diag(eigval ** (-1)) @ eigvec.T
         self['Sw_invSb'].append(np.trace(Sw @ inv_Sb))  # Gets divide by 0 for the first epochs, it is fine...
+
+        # TODO: Proportion of  variance explained
+        if True or do_stl_analysis:
+            num_sing_values = 30
+            activations = np.concatenate(all_stl_activations, axis=0)
+            activations -= np.mean(activations, axis=0)
+            # activations /= np.linalg.norm(activations, axis=0)
+            activation_cov = activations.T @ activations
+            _, activation_eigvals, _ = svds(activation_cov, k=num_sing_values)  # Get singular values of activations
+            activation_eigvals /= np.trace(activation_cov)  # Normalize
+            activation_eigvals = activation_eigvals[::-1]
+
+            # Plot
+            plt.plot(activation_eigvals, "o", label="Singular values")
+            plt.plot(np.cumsum(activation_eigvals), "x--", label="Culumative explained variance")
+            plt.xlabel("Singular value ordering")
+            plt.ylabel("Proportion of explained variance")
+            plt.title("Explained variance of last hidden layer activation singular values")
+            plt.legend()
+            plt.grid()
+            plt.savefig("evar_last.pdf")
+            plt.show()
+            print(activation_eigvals)
 
         if second_to_last:
             next_layer_width = classifier.weight.shape[1]
@@ -286,7 +316,7 @@ def main(args, second_to_last = False):
 
     print("One iteration step takes approx. 1-5 minutes")
     measurements = Measurements()
-    for e in tqdm(logging_cfg['epoch-list']):
+    for e in tqdm(logging_cfg['epoch-list'][::-1]):
         model.load_state_dict(torch.load(os.path.join(save_dir_data, f'{e}.pt'), map_location=torch.device('cpu')))
 
         measurements.compute_metrics(model, criterion, trainloader, optimizer_cfg['weight-decay'], num_classes,
@@ -309,11 +339,11 @@ def main(args, second_to_last = False):
 
 def test():
     print("----"*20, "\nTEST OF do_measurements.py\n", "----"*20)
-    args.config = "../config/cifar_short_2fc.yaml"
-    main(args, second_to_last=True)
+    args.config = "../config/cifar_2fc.yaml"
+    main(args, second_to_last=False)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    main(args, second_to_last=args.stl)
-    # test()
+    # main(args, second_to_last=args.stl)
+    test()
