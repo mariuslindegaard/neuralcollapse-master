@@ -1,4 +1,4 @@
-#! /bin/env bash
+#!/bin/bash
 
 start_dir=$(pwd)
 config_file=$start_dir/$1
