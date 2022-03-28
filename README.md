@@ -6,5 +6,13 @@ Run an experiment by
 which will (1) run the training procedure, (2) do the relevant measurements and (3) concatenate the config-file and the output-plots into a single file.
 
 To run the NC measurements in the second-to-last layer, run
-`python3 src/do_measurements.py -cfg path/to/config_file.yaml -stl ; ./scripts/parse_fifs.sh -cfg path/to/config_file.yaml -stl` after having run either `./do_experiment.sh path/to/config_file.yaml` or `python3 src/do_training.py -cfg path/to/config_file`
+
+> python3 src/do_measurements.py -cfg path/to/config_file.yaml -stl ; ./scripts/parse_figs.sh -cfg path/to/config_file.yaml -stl
+
+after having run either 
+> ./do_experiment.sh path/to/config_file.yaml
+
+ or 
+
+> python3 src/do_training.py -cfg path/to/config_file
 
